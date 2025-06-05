@@ -1,0 +1,23 @@
+from bs4 import BeautifulSoup
+import requests
+import time
+url = "https://news.ycombinator.com/newest"
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+response = requests.get(url, headers=headers)
+soup = BeautifulSoup(response.text, "html.parser")
+articles = soup.find_all("tr", class_="athing submission")
+for article in articles:
+    title_tag = article.find("span", class_="titleline").find("a")
+    title = title_tag.text
+    link = title_tag["href"]
+    try:
+        page = requests.get(link, headers=headers, timeout=5)
+        pageSoup = BeautifulSoup(page.text, "html.parser")
+        paragraphs = pageSoup.find_all("p")
+        content = "\n".join([p.get_text(strip=True) for p in paragraphs])
+        print(f"\n\n{title}: 📝 First 1000 characters:\n{content[:1000]}")
+        time.sleep(1)  
+    except: 
+        print(f"{link}: Page content unavailable")
